@@ -1,25 +1,26 @@
 #include <KafkaSink.h>
 
-bool KafkaSink::initialize(Configuration & configuration)
+bool KafkaSink::initialize(shared_ptr<Configuration> configuration)
 {
-    if (!active)  return true; //if deactivated in configuration, skip init
-    if (!changed) return true; //Only reconnnect if settings changed
+    if (!conf) 
+    { 
+        conf       = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
+        conf->set("dr_cb", this, errstr); // Set delivery report callback
+    }
+    if (!topic_conf) { topic_conf = RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC); }
 
     if (topic)      { delete topic;      topic      = 0x0; }
     if (producer)   { delete producer;   producer   = 0x0; }
 
-    setActive(configuration.getSnkActive());
-    setBrokers(configuration.getSnkBrokers());
-    setTopic(configuration.getSnkTopic());
-    setDebug(configuration.getSnkDebug());
-    setLingerMs(configuration.getSnkLingerMs());
-    setSecurityProtocol(configuration.getSnkSecurityProtocol());
-    setSslCaLocation(configuration.getSnkSslCaLocation());
-    setSslCertificateLocation(configuration.getSnkSslCertificateLocation());
-    setSslKeyLocation(configuration.getSnkSslKeyLocation());
-    setSslKeyPassword(configuration.getSnkSslKeyPassword());
-
-    changed = false;
+    setBrokers(configuration->getSnkBrokers());
+    setTopic(configuration->getSnkTopic());
+    setDebug(configuration->getSnkDebug());
+    setLingerMs(configuration->getSnkLingerMs());
+    setSecurityProtocol(configuration->getSnkSecurityProtocol());
+    setSslCaLocation(configuration->getSnkSslCaLocation());
+    setSslCertificateLocation(configuration->getSnkSslCertificateLocation());
+    setSslKeyLocation(configuration->getSnkSslKeyLocation());
+    setSslKeyPassword(configuration->getSnkSslKeyPassword());
 
     conf->set("linger.ms"               , linger_ms                , errstr); if (debug) cout << errstr << endl;
     conf->set("security.protocol"       , security_protocol        , errstr); if (debug) cout << errstr << endl;
@@ -53,23 +54,7 @@ bool KafkaSink::initialize(Configuration & configuration)
 };
 
 
-void KafkaSink::write(string & output_string)
-{
-    if (!active) return; //if deactivated in configuration, skip writeRecord
-    publishString(output_string);
-};
-
-
-void KafkaSink::dr_cb (RdKafka::Message &message) {
-    if (!debug) return;
-    cout << "Message delivery for (" << message.len() << " bytes): " <<
-        message.errstr() << endl;
-    if (message.key())
-        cout << "Key: " << *(message.key()) << ";" << endl;
-};
-
-
-void KafkaSink::publishString(string & output_string)
+void KafkaSink::write(string output_string)
 {
     // Here the output_string is published
     RdKafka::ErrorCode resp =
@@ -86,5 +71,15 @@ void KafkaSink::publishString(string & output_string)
     else if (debug)
         cout << "Produced message (" << output_string.size() << " bytes)" << endl;
     producer->poll(0);
-}
+};
+
+
+void KafkaSink::dr_cb (RdKafka::Message &message) {
+    if (!debug) return;
+    cout << "Message delivery for (" << message.len() << " bytes): " <<
+        message.errstr() << endl;
+    if (message.key())
+        cout << "Key: " << *(message.key()) << ";" << endl;
+};
+
 

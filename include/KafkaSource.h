@@ -1,5 +1,5 @@
-#ifndef OUMKAFKARECORDFACTORY_H
-#define OUMKAFKARECORDFACTORY_H
+#ifndef UND_KAFKASOURCE_H
+#define UND_KAFKASOURCE_H
 
 // KafkaSource.h
 #include <Configuration.h>
@@ -20,12 +20,14 @@ class KafkaSource {
 
     public:
 
+        KafkaSource() {};
+        KafkaSource(shared_ptr<Configuration> conf) { initialize(conf); };
         ~KafkaSource() { close(); };
 
         // The interface, in call order.
-        bool   initialize(Configuration & conf); // Connect
-        string next();                           // fetch next OUMRecord instance
-        bool   close();                          // close the connection
+        bool   initialize(shared_ptr<Configuration> conf); // Connect
+        string next();                                     // fetch next OUMRecord instance
+        bool   close();                                    // close the connection
 
         bool   isConnected() { return connected; }; // check connection connected
 
@@ -40,11 +42,7 @@ class KafkaSource {
         void   setSslKeyPassword(string val)         { ssl_key_password = val;          }
         void   setDebug(bool val)                    { debug = val;                     }
 
-
     private:
-        // message handlers
-        bool create_consumer();
-        bool load_raw();
 
         // Kafka configurations
         string kafka_brokers = "localhost:9092";  // list of Kafka servers (brokers) hosts and ports of format 'host:port[,host:port]*'
@@ -56,7 +54,13 @@ class KafkaSource {
         string ssl_key_location;                  // Cert info for SSL
         string ssl_key_password;                  // Cert info for SSL
         bool debug = true;   
+
+        // Internal flags
         bool connected = false;   
+
+        // message handlers
+        bool create_consumer();
+        bool load_raw();
 
         // The KafkaConsumer object
         RdKafka::KafkaConsumer * the_consumer;

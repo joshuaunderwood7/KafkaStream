@@ -1,18 +1,18 @@
 #include <KafkaSource.h>
 
-bool KafkaSource::initialize(Configuration & conf)
+bool KafkaSource::initialize(shared_ptr<Configuration> conf)
 {
     if (connected) close();
 
-    setKafkaBrokers(conf.getSrcBrokers());           
-    setKafkaTopic(conf.getSrcTopic());
-    setGroupId(conf.getSrcGroupId());
-    setSecurityProtocol(conf.getSrcSecurityProtocol());
-    setSslCaLocation(conf.getSrcSslCaLocation());
-    setSslCertificateLocation(conf.getSrcSslCertificateLocation());
-    setSslKeyLocation(conf.getSrcSslKeyLocation());
-    setSslKeyPassword(conf.getSrcSslKeyPassword());
-    setDebug(conf.getSrcDebug());                   
+    setKafkaBrokers(conf->getSrcBrokers());           
+    setKafkaTopic(conf->getSrcTopic());
+    setGroupId(conf->getSrcGroupId());
+    setSecurityProtocol(conf->getSrcSecurityProtocol());
+    setSslCaLocation(conf->getSrcSslCaLocation());
+    setSslCertificateLocation(conf->getSrcSslCertificateLocation());
+    setSslKeyLocation(conf->getSrcSslKeyLocation());
+    setSslKeyPassword(conf->getSrcSslKeyPassword());
+    setDebug(conf->getSrcDebug());                   
 
     // connect to server
     create_consumer();

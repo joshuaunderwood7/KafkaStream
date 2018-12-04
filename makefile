@@ -1,9 +1,9 @@
 CC=g++
-CPPFLAGS=-std=c++11 -Iinclude -Ilib/tinyxml/include/
+CPPFLAGS=-std=c++11 -ggdb -Iinclude -Ilib/tinyxml/include/
 LDFLAGS=-Llib/tinyxml/lib/
 LDLIBS=-lrdkafka -lrdkafka++ -lz -lpthread -lrt -ldl -lssl -lcrypto -ltinyxml
 
-EXE = hello
+EXE = program
 
 SRC_DIR = src
 OBJ_DIR = obj
@@ -14,9 +14,6 @@ OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 .PHONEY: all clean
 
 all : $(EXE)
-
-hello: 
-	echo $(SRC)
 
 $(EXE): $(OBJ)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@

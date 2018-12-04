@@ -22,8 +22,6 @@ bool Configuration::load(string filename)
     // Connection is a mandatory Configuration
     pElem = hRoot.FirstChild("Source").Element();
     if (!pElem) return false; //Missing source Configuration
-    safeAttribute(pElem, src_hostname                , "hostname");
-    safeAttribute(pElem, src_port                    , "port");
     safeAttribute(pElem, src_brokers                 , "brokers");
     safeAttribute(pElem, src_topic                   , "topic");
     safeAttribute(pElem, src_group_id                , "group-id");
@@ -33,11 +31,9 @@ bool Configuration::load(string filename)
     safeAttribute(pElem, src_ssl_key_location        , "ssl-key-location");
     safeAttribute(pElem, src_ssl_key_password        , "ssl-key-password");
     safeAttribute(pElem, src_starting_offset         , "starting-offset");
-    safeAttribute(pElem, src_partition               , "partition");
 
     pElem = hRoot.FirstChild("Sink").Element();
     if (!pElem) return false; //Missing sink Configuration
-    safeAttribute(pElem, snk_active                  , "active");
     safeAttribute(pElem, snk_brokers                 , "brokers");
     safeAttribute(pElem, snk_topic                   , "topic");
     safeAttribute(pElem, snk_linger_ms               , "linger-ms");
@@ -70,8 +66,6 @@ void Configuration::save(string filename)
 
     TiXmlElement * src = new TiXmlElement( "Source" );  
     root->LinkEndChild( src );  
-    src->SetAttribute("hostname", src_hostname.c_str());
-    src->SetAttribute("port", src_port.c_str()); 
     src->SetAttribute("brokers", src_brokers.c_str());
     src->SetAttribute("topic", src_topic.c_str());
     src->SetAttribute("group-id", src_group_id.c_str());
@@ -81,12 +75,11 @@ void Configuration::save(string filename)
     src->SetAttribute("ssl-key-location", src_ssl_key_location.c_str());
     src->SetAttribute("ssl-key-password", src_ssl_key_password.c_str());
     src->SetAttribute("starting-offset", src_starting_offset.c_str());
-    src->SetAttribute("partition", src_partition.c_str());
+    src->SetAttribute("debug", src_debug.c_str());
 
 
     TiXmlElement * snk = new TiXmlElement( "Sink" );  
     root->LinkEndChild( snk );  
-    snk->SetAttribute("active", snk_active.c_str());
     snk->SetAttribute("brokers", snk_brokers.c_str());
     snk->SetAttribute("topic", snk_topic.c_str());
     snk->SetAttribute("linger-ms", snk_linger_ms.c_str());
@@ -110,7 +103,7 @@ int64_t Configuration::getSrcStartingOffset  () {
     if (src_starting_offset == "from-beginning") return RdKafka::Topic::OFFSET_BEGINNING; //-2
     if (src_starting_offset == "from-end")       return RdKafka::Topic::OFFSET_END; //-1
     if (src_starting_offset == "from-stored")    return RdKafka::Topic::OFFSET_STORED; //-1000
-    try {                                    return stoll(src_starting_offset); 
+    try { /* If a number is input as offset */   return stoll(src_starting_offset); 
     } catch ( const invalid_argument & e ) {
         cout << "Invalid Configuration: Connection::starting-offset" << endl;
         cout << "-intepreting as \"from-end\"" << endl;
@@ -119,11 +112,3 @@ int64_t Configuration::getSrcStartingOffset  () {
 };
 
 
-int32_t Configuration::getSrcPartition  () { 
-    try { return stoll(src_partition); 
-    } catch ( const invalid_argument & e ) {
-        cout << "Invalid partition: Connection::partition" << endl;
-        cout << "-intepreting as \"0\"" << endl;
-        return 0;
-    }
-};
