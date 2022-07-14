@@ -58,6 +58,7 @@ private:
   string ssl_key_location;         // Cert info for SSL
   string ssl_key_password;         // Cert info for SSL
   bool   debug;
+  bool   supress_output = false;
 
   // RdKafka classes and structures
   RdKafka::Conf     * conf = 0x0;

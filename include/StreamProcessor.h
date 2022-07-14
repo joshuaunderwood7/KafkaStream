@@ -21,7 +21,7 @@ class MapFunction
 class StreamProcessor
 {
     public:
-        StreamProcessor(string Configuration_file_path);
+        StreamProcessor(shared_ptr<Configuration> & config_sptr);
 
         void applyMap(MapFunction * map_function);
         

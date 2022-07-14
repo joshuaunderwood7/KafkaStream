@@ -12,6 +12,13 @@ bool KafkaSink::initialize(shared_ptr<Configuration> configuration)
     if (topic)      { delete topic;      topic      = 0x0; }
     if (producer)   { delete producer;   producer   = 0x0; }
 
+    if (configuration->getSnkSupressOutput())
+    {
+        cout << "Kafka output supressed." << endl;
+        supress_output = true;
+        return true;
+    } else supress_output = false;
+
     setBrokers(configuration->getSnkBrokers());
     setTopic(configuration->getSnkTopic());
     setDebug(configuration->getSnkDebug());
@@ -56,6 +63,8 @@ bool KafkaSink::initialize(shared_ptr<Configuration> configuration)
 
 void KafkaSink::write(string output_string)
 {
+    if (supress_output) return;
+
     // Here the output_string is published
     RdKafka::ErrorCode resp =
         producer->produce( topic

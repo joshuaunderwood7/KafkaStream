@@ -1,13 +1,34 @@
 #include <StreamProcessor.h>
 
+#include <csignal>
+#include <cstdio>
 #include <iostream>
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <time.h>
+
 using namespace std;
+
+bool   SIGNAL_HALT     = false;
+void   signalHandler(int signum);
 
 class MyMap : public MapFunction
 {
     public:
-        int total_msgs = 0;
+        shared_ptr<Configuration> configuration;
+
+        int      total_msgs = 0;
+        string   base_name  = "program";
+        string   init_time  = "";
+
+
+        MyMap(shared_ptr<Configuration> & config)
+        {
+            configuration = make_shared<Configuration>(*config);
+            // base_name     = configuration->getXXXBaseName();
+            init_time = to_string((uintmax_t)time(NULL));
+        }
 
         virtual string map(string input)
         {
@@ -16,7 +37,16 @@ class MyMap : public MapFunction
             return  input;
         }
 
-        virtual bool running() { return total_msgs < 10; }
+        virtual bool running() 
+        { 
+            if (SIGNAL_HALT) 
+            {
+                cout << "Halt signal detected, stopping " << base_name 
+                     << "." << init_time << endl;
+                return false;
+            }
+            return total_msgs < 10;
+        }
 };
 
 int main(int argc, const char *argv[])
@@ -28,10 +58,15 @@ int main(int argc, const char *argv[])
         return 1;
     }
 
+    // Register the Normal kill signals to halt program
+    signal(SIGINT,  signalHandler);
+    signal(SIGTERM, signalHandler);
+
     cout << "starting." << endl;
-    string            config_file(argv[1]);
-    StreamProcessor   stream_processor(config_file);
-    MapFunction     * my_map = new MyMap();
+    shared_ptr<Configuration> configuration( new Configuration(argv[1]) );
+
+    StreamProcessor   stream_processor(configuration);
+    MapFunction     * my_map = new MyMap(configuration);
 
     cout << "running." << endl;
     while(my_map->running())
@@ -39,6 +74,24 @@ int main(int argc, const char *argv[])
         stream_processor.applyMap(my_map);
     }
 
+    delete my_map;
     cout << "done." << endl;
     return 0;
-}
+};
+
+//What to do when the program is killed with a SINGAL, rather than a STOPFILE
+void signalHandler(int signum)
+{
+    cout << "SIGNAL " << signum << " detected. ";
+    if (SIGNAL_HALT) 
+    {
+        cout << "Repeated SIGNAL " << signum 
+             << " detected. Killing program immediately" << endl;
+        exit(signum);
+    }
+
+    cout << "Attempting to halt" << endl;
+    SIGNAL_HALT = true;
+
+};
+

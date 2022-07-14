@@ -34,6 +34,7 @@ bool Configuration::load(string filename)
 
     pElem = hRoot.FirstChild("Sink").Element();
     if (!pElem) return false; //Missing sink Configuration
+    safeAttribute(pElem, snk_supress_output          , "supress-output");
     safeAttribute(pElem, snk_brokers                 , "brokers");
     safeAttribute(pElem, snk_topic                   , "topic");
     safeAttribute(pElem, snk_linger_ms               , "linger-ms");
@@ -80,6 +81,7 @@ void Configuration::save(string filename)
 
     TiXmlElement * snk = new TiXmlElement( "Sink" );  
     root->LinkEndChild( snk );  
+    snk->SetAttribute("supress-output", snk_supress_output.c_str());
     snk->SetAttribute("brokers", snk_brokers.c_str());
     snk->SetAttribute("topic", snk_topic.c_str());
     snk->SetAttribute("linger-ms", snk_linger_ms.c_str());

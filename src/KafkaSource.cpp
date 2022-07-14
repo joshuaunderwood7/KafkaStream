@@ -6,6 +6,7 @@ bool KafkaSource::initialize(shared_ptr<Configuration> conf)
 
     setKafkaBrokers(conf->getSrcBrokers());           
     setKafkaTopic(conf->getSrcTopic());
+    setKafkaStartingOffset(conf->getSrcStartingOffset());
     setGroupId(conf->getSrcGroupId());
     setSecurityProtocol(conf->getSrcSecurityProtocol());
     setSslCaLocation(conf->getSrcSslCaLocation());
@@ -22,7 +23,16 @@ bool KafkaSource::initialize(shared_ptr<Configuration> conf)
 
 string KafkaSource::next()
 {   // fetch next OUMRecord instance
-    while (!load_raw()) {};
+    int timeout_counter = 0;
+    while (!load_raw()) 
+    {
+        ++timeout_counter;
+        if (debug) cout << "KafkaSource::next() - timeout_counter is "
+                        << timeout_counter << " of 10." << endl;
+
+        if (timeout_counter >= 10)
+            return "XX__CONNECTION__TIMED__OUT__XX";
+    };
     return raw_buffer;
 };
 
@@ -57,8 +67,9 @@ bool KafkaSource::create_consumer()
     the_conf->set("group.id", group_id, the_errstr); if (debug) cout << the_errstr << endl;
 
     // set auto.commit
-    the_conf->set("enable.auto.commit"     , "true", the_errstr); if (debug) cout << the_errstr << endl;
-    the_conf->set("auto.commit.interval.ms", "1000", the_errstr); if (debug) cout << the_errstr << endl;
+    the_conf->set("enable.auto.commit"     ,      "true", the_errstr); if (debug) cout << the_errstr << endl;
+    the_conf->set("auto.commit.interval.ms",      "1000", the_errstr); if (debug) cout << the_errstr << endl;
+    the_conf->set("auto.offset.reset"      , "beginning", the_errstr); if (debug) cout << the_errstr << endl;
 
     // Create producer using global configuration.
     the_consumer = RdKafka::KafkaConsumer::create(the_conf, the_errstr); if (debug) cout << the_errstr << endl;
@@ -75,15 +86,10 @@ bool KafkaSource::create_consumer()
 
     cout << "Connected to topic : " << kafka_topic << endl;
     cout << "Consumer Group : " << group_id << endl;
+
     std::vector<RdKafka::TopicPartition*> partitions;
     the_consumer->assignment( partitions );
-    cout << "Partitions : " << partitions.size() << endl;
-    for ( unsigned i = 0; i < partitions.size(); i ++ )
-    {
-        RdKafka::TopicPartition* partition = partitions[ i ];
-        int id = partition->partition();
-        cout << "  Partition : id " << id << " offset "  << partition->offset() << endl;
-    }
+    cout << "(partitions are automatically assigned)" << endl;
 
     connected = true;
     return true;

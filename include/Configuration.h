@@ -19,7 +19,7 @@ private:
 
     // Source
     string src_brokers;                  // list of Kafka servers (brokers) hosts and ports of format 'host:port[,host:port]*'
-    string src_topic;                    // Kafka topic to output to
+    string src_topic;                    // Kafka topic for input 
     string src_group_id;                 // Kafka Consumer Group id (share the load)
     string src_security_protocol;        // PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL
     string src_ssl_ca_location;          // Cert info for SSL
@@ -30,6 +30,7 @@ private:
     string src_debug;                    // Print out debug info
 
     // Sink
+    string snk_supress_output;           // Do not output data to Sink
     string snk_brokers;                  // list of Kafka servers (brokers) hosts and ports of format 'host:port[,host:port]*'
     string snk_topic;                    // Kafka topic to output to
     string snk_linger_ms;                // how long the producer waits for more messages to be produced by the app before sending them off to the broker in one batch of messages.
@@ -49,49 +50,68 @@ public:
     void save(string filename);
 
     // setters and getters
-    string         getSrcBrokers()                          { return src_brokers; };
-    string         getSrcTopic()                            { return src_topic; };
-    string         getSrcGroupId()                          { return src_group_id; };
-    string         getSrcSecurityProtocol()                 { return src_security_protocol; };
-    string         getSrcSslCaLocation()                    { return src_ssl_ca_location; };
-    string         getSrcSslCertificateLocation()           { return src_ssl_certificate_location; };
-    string         getSrcSslKeyLocation()                   { return src_ssl_key_location; };
-    string         getSrcSslKeyPassword()                   { return src_ssl_key_password; };
-    int64_t        getSrcStartingOffset();                  /* see .cpp for implementation */
-    bool           getSrcDebug()                            { return src_debug == "1"; };
+    // Source
+    string  getSrcBrokers()                          { return src_brokers; };
+    void    setSrcBrokers(string & x)                { src_brokers = x; };
 
-    void           setSrcBrokers(string & x)                { src_brokers = x; };
-    void           setSrcTopic(string & x)                  { src_topic = x; };
-    void           setSrcGroupId(string & x)                { src_group_id = x; };
-    void           setSrcSecurityProtocol(string & x)       { src_security_protocol = x; };
-    void           setSrcSslCaLocation(string & x)          { src_ssl_ca_location = x; };
-    void           setSrcSslCertificateLocation(string & x) { src_ssl_certificate_location = x; };
-    void           setSrcSslKeyLocation(string & x)         { src_ssl_key_location = x; };
-    void           setSrcSslKeyPassword(string & x)         { src_ssl_key_password = x; };
-    void           setSrcStartingOffset(string x)           { src_starting_offset = x; };
-    void           setSrcStartingOffset(int64_t x)          { src_starting_offset = std::to_string(x); };
-    bool           getSrcDebug(bool & x)                    { src_debug = (x) ? "1" : "0"; };
+    string  getSrcTopic()                            { return src_topic; };
+    void    setSrcTopic(string & x)                  { src_topic = x; };
 
-    string         getSnkBrokers()                          { return snk_brokers; };
-    string         getSnkTopic()                            { return snk_topic; };
-    string         getSnkLingerMs()                         { return snk_linger_ms; };
-    string         getSnkSecurityProtocol()                 { return snk_security_protocol; };
-    string         getSnkSslCaLocation()                    { return snk_ssl_ca_location; };
-    string         getSnkSslCertificateLocation()           { return snk_ssl_certificate_location; };
-    string         getSnkSslKeyLocation()                   { return snk_ssl_key_location; };
-    string         getSnkSslKeyPassword()                   { return snk_ssl_key_password; };
-    bool           getSnkDebug()                            { return snk_debug == "1"; };
+    string  getSrcGroupId()                          { return src_group_id; };
+    void    setSrcGroupId(string & x)                { src_group_id = x; };
 
-    string         setSnkBrokers(string & x)                { snk_brokers = x; };
-    string         setSnkTopic(string & x)                  { snk_topic = x; };
-    string         setSnkLingerMs(string & x)               { snk_linger_ms = x; };
-    string         setSnkSecurityProtocol(string & x)       { snk_security_protocol = x; };
-    string         setSnkSslCaLocation(string & x)          { snk_ssl_ca_location = x; };
-    string         setSnkSslCertificateLocation(string & x) { snk_ssl_certificate_location = x; };
-    string         setSnkSslKeyLocation(string & x)         { snk_ssl_key_location = x; };
-    string         setSnkSslKeyPassword(string & x)         { snk_ssl_key_password = x; };
-    bool           setSnkDebug(bool & x)                    { snk_debug = (x) ? "1" : "0"; };
+    string  getSrcSecurityProtocol()                 { return src_security_protocol; };
+    void    setSrcSecurityProtocol(string & x)       { src_security_protocol = x; };
 
+    string  getSrcSslCaLocation()                    { return src_ssl_ca_location; };
+    void    setSrcSslCaLocation(string & x)          { src_ssl_ca_location = x; };
+
+    string  getSrcSslCertificateLocation()           { return src_ssl_certificate_location; };
+    void    setSrcSslCertificateLocation(string & x) { src_ssl_certificate_location = x; };
+
+    string  getSrcSslKeyLocation()                   { return src_ssl_key_location; };
+    void    setSrcSslKeyLocation(string & x)         { src_ssl_key_location = x; };
+
+    string  getSrcSslKeyPassword()                   { return src_ssl_key_password; };
+    void    setSrcSslKeyPassword(string & x)         { src_ssl_key_password = x; };
+
+    int64_t getSrcStartingOffset();                  /* see .cpp for implementation */
+    void    setSrcStartingOffset(string x)           { src_starting_offset = x; };
+    void    setSrcStartingOffset(int64_t x)          { src_starting_offset = std::to_string(x); };
+
+    bool    getSrcDebug()                            { return src_debug == "1"; };
+    void    setSrcDebug(bool & x)                    { src_debug = (x) ? "1" : "0"; };
+
+    // Sink
+    bool    getSnkSupressOutput()                    { return snk_supress_output =="1"; };
+    void    setSnkSupressOutput(bool x)              { snk_supress_output = (x) ? "1" : "0"; };
+
+    string  getSnkBrokers()                          { return snk_brokers; };
+    void    setSnkBrokers(string & x)                { snk_brokers = x; };
+
+    string  getSnkTopic()                            { return snk_topic; };
+    void    setSnkTopic(string & x)                  { snk_topic = x; };
+
+    string  getSnkLingerMs()                         { return snk_linger_ms; };
+    void    setSnkLingerMs(string & x)               { snk_linger_ms = x; };
+
+    string  getSnkSecurityProtocol()                 { return snk_security_protocol; };
+    void    setSnkSecurityProtocol(string & x)       { snk_security_protocol = x; };
+
+    string  getSnkSslCaLocation()                    { return snk_ssl_ca_location; };
+    void    setSnkSslCaLocation(string & x)          { snk_ssl_ca_location = x; };
+
+    string  getSnkSslCertificateLocation()           { return snk_ssl_certificate_location; };
+    void    setSnkSslCertificateLocation(string & x) { snk_ssl_certificate_location = x; };
+
+    string  getSnkSslKeyLocation()                   { return snk_ssl_key_location; };
+    void    setSnkSslKeyLocation(string & x)         { snk_ssl_key_location = x; };
+
+    string  getSnkSslKeyPassword()                   { return snk_ssl_key_password; };
+    void    setSnkSslKeyPassword(string & x)         { snk_ssl_key_password = x; };
+
+    bool    getSnkDebug()                            { return snk_debug == "1"; };
+    void    setSnkDebug(bool & x)                    { snk_debug = (x) ? "1" : "0"; };
 
 };
 

@@ -1,10 +1,10 @@
 #include <StreamProcessor.h>
 
-StreamProcessor::StreamProcessor(string config_file)
+StreamProcessor::StreamProcessor(shared_ptr<Configuration> & config_sptr)
 {
-    configuration = shared_ptr<Configuration>(new Configuration(config_file) );
-    source        = shared_ptr<KafkaSource>  (new KafkaSource()              );
-    sink          = shared_ptr<KafkaSink>    (new KafkaSink()                );
+    configuration = make_shared<Configuration>(    *config_sptr  );
+    source        = shared_ptr<KafkaSource>   ( new KafkaSource());
+    sink          = shared_ptr<KafkaSink>     ( new KafkaSink()  );
     initialized   = true; // Changed to false on initialize failure
 
     if (!source->initialize(configuration))
@@ -21,6 +21,8 @@ StreamProcessor::StreamProcessor(string config_file)
 
 void StreamProcessor::applyMap(MapFunction * map_function)
 { 
-    sink->write(map_function->map(source->next())); 
+    string source_next = source->next();
+    if (source_next == "XX__CONNECTION__TIMED__OUT__XX") return;
+    sink->write(map_function->map(source_next)); 
 }
 

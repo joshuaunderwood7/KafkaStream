@@ -34,6 +34,7 @@ class KafkaSource {
         // Setters for configuration
         void   setKafkaBrokers(string val)           { kafka_brokers = val;             }
         void   setKafkaTopic(string val)             { kafka_topic = val;               }
+        void   setKafkaStartingOffset(int64_t val)   { kafka_starting_offset = val;     }
         void   setGroupId(string val)                { group_id = val;                  }
         void   setSecurityProtocol(string val)       { security_protocol = val;         }
         void   setSslCaLocation(string val)          { ssl_ca_location = val;           }
@@ -45,15 +46,16 @@ class KafkaSource {
     private:
 
         // Kafka configurations
-        string kafka_brokers = "localhost:9092";  // list of Kafka servers (brokers) hosts and ports of format 'host:port[,host:port]*'
-        string kafka_topic = "test";              // Kafka topic to output to
-        string group_id = "kafka-source";         // Reported node_id in MTs
-        string security_protocol = "PLAINTEXT";   // PLAINTEXT, SSL
-        string ssl_ca_location;                   // Cert info for SSL
-        string ssl_certificate_location;          // Cert info for SSL
-        string ssl_key_location;                  // Cert info for SSL
-        string ssl_key_password;                  // Cert info for SSL
-        bool debug = true;   
+        string  kafka_brokers = "localhost:9092";  // list of Kafka servers (brokers) hosts and ports of format 'host:port[,host:port]*'
+        string  kafka_topic = "test";              // Kafka topic to read from
+        int64_t kafka_starting_offset = -1;        // Kafka topic partition starting offset
+        string  group_id = "kafka-source";         // Reported node_id in MTs
+        string  security_protocol = "PLAINTEXT";   // PLAINTEXT, SSL
+        string  ssl_ca_location;                   // Cert info for SSL
+        string  ssl_certificate_location;          // Cert info for SSL
+        string  ssl_key_location;                  // Cert info for SSL
+        string  ssl_key_password;                  // Cert info for SSL
+        bool    debug = true;   
 
         // Internal flags
         bool connected = false;   
