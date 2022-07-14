@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<kafka-stream>
+
+    <Source
+        brokers="localhost:9093"
+        topic="test.in"
+        group-id="program_dev"
+        security-protocol="SSL"
+        ssl-ca-location="/etc/pki/my-CA.pem"
+        ssl-certificate-location="/etc/pki/my-CRT.crt"
+        ssl-key-location="/etc/pki/my-KEY.key"
+        ssl-key-password="my-password"
+        debug="0"
+        />
+
+    <Sink
+        supress-output="0" 
+        brokers="localhost:9093"
+        topic="test.out"
+        linger-ms="1000"
+        security-protocol="SSL"
+        ssl-ca-location="/etc/pki/my-CA.pem"
+        ssl-certificate-location="/etc/pki/my-CRT.crt"
+        ssl-key-location="/etc/pki/my-KEY.key"
+        ssl-key-password="my-password"
+        debug="0"
+        />
+
+</kafka-stream>
+

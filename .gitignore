@@ -3,4 +3,3 @@ cscope.out
 program
 obj/*.o
 ssl-config.xml
-config.xml
