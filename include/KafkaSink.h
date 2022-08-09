@@ -34,6 +34,9 @@ public:
   void write(string output_string);
   bool stop() {};
 
+  void addToBuffer(unique_ptr<string> output_string);
+  void writeBuffer();
+
   void setBrokers          (string brokers_ ){brokers                  = brokers_; };
   void setTopic            (string topic_   ){topic_str                = topic_;   };
   void setDebug            (bool   debug_   ){debug                    = debug_;   };
@@ -61,11 +64,12 @@ private:
   bool   supress_output = false;
 
   // RdKafka classes and structures
-  RdKafka::Conf     * conf = 0x0;
-  RdKafka::Conf     * topic_conf = 0x0;
-  RdKafka::Producer * producer = 0x0;
-  RdKafka::Topic    * topic = 0x0;
-  string              errstr;
+  RdKafka::Conf               * conf = 0x0;
+  RdKafka::Conf               * topic_conf = 0x0;
+  RdKafka::Producer           * producer = 0x0;
+  RdKafka::Topic              * topic = 0x0;
+  string                        errstr;
+  deque< unique_ptr<string> >   output_buffer;
 
 };
 

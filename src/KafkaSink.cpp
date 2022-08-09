@@ -83,6 +83,21 @@ void KafkaSink::write(string output_string)
 };
 
 
+void KafkaSink::addToBuffer(unique_ptr<string> output_string)
+{
+    output_buffer.push_back(move(output_string));
+};
+
+void KafkaSink::writeBuffer()
+{
+    for(auto & output_string : output_buffer)
+    {
+        this->write(*output_string);
+    }
+    output_buffer.clear();
+};
+
+
 void KafkaSink::dr_cb (RdKafka::Message &message) {
     if (!debug) return;
     cout << "Message delivery for (" << message.len() << " bytes): " <<
