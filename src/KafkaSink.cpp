@@ -63,7 +63,8 @@ bool KafkaSink::initialize(shared_ptr<Configuration> configuration)
 
 void KafkaSink::write(string output_string)
 {
-    if (supress_output) return;
+    if (supress_output) { return; }
+    if (output_string=="XX__DO_NOT_WRITE__XX") { return };
 
     // Here the output_string is published
     RdKafka::ErrorCode resp =

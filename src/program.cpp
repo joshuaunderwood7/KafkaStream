@@ -79,7 +79,7 @@ int main(int argc, const char *argv[])
     return 0;
 };
 
-//What to do when the program is killed with a SINGAL, rather than a STOPFILE
+//What to do when the program is killed with a SINGAL
 void signalHandler(int signum)
 {
     cout << "SIGNAL " << signum << " detected. ";
@@ -92,6 +92,5 @@ void signalHandler(int signum)
 
     cout << "Attempting to halt" << endl;
     SIGNAL_HALT = true;
-
 };
 

@@ -4,6 +4,14 @@
 void safeAttribute(TiXmlElement * pElem, string & target, const string & key)
 { if (pElem && pElem->Attribute(key.c_str())) target = pElem->Attribute(key.c_str()); }
 
+bool safeText(TiXmlElement * pElem, string & target)
+{ 
+    if (!pElem) return false;
+    const char * text = pElem->GetText();
+    if(text) { target = string(text); return true; }
+    return false;
+}
+
 
 bool Configuration::load(string filename)
 {
