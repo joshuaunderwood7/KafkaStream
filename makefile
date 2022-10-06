@@ -1,7 +1,8 @@
 CC=g++
-CPPFLAGS=-std=c++11 -ggdb -Iinclude -Ilib/tinyxml/include/
-LDFLAGS=-Llib/tinyxml/lib/
-LDLIBS=-lrdkafka -lrdkafka++ -lz -lpthread -lrt -ldl -lssl -lcrypto -ltinyxml
+CPPFLAGS=-std=c++11 -Iinclude -Ilib/libconfig/include/
+LDFLAGS=-Llib/libconfig/lib/
+LDLIBS=-lrdkafka -lrdkafka++ -lz -lpthread -lrt -ldl -lssl -lcrypto -lconfig++
+MAKEFLAGS := --jobs=$(shell nproc)
 
 EXE = program
 
@@ -12,8 +13,17 @@ SRC = $(wildcard $(SRC_DIR)/*.cpp)
 OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 .PHONEY: all clean
-
 all : $(EXE)
+
+opt: CPPFLAGS += -O2 -s
+opt: all
+
+debug: CPPFLAGS += -ggdb
+debug: all
+
+profile: CPPFLAGS += -pg
+profile: all
+
 
 $(EXE): $(OBJ)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@

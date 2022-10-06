@@ -21,8 +21,15 @@ StreamProcessor::StreamProcessor(shared_ptr<Configuration> & config_sptr)
 
 void StreamProcessor::applyMap(MapFunction * map_function)
 { 
+    if (!initialized)
+    {
+        cout << "StreamProcessor::applyMap - StreamProcessor not initialized,"
+             << " cannot process data stream" << endl;
+    }
+
     string source_next = source->next();
     if (source_next == "XX__CONNECTION__TIMED__OUT__XX") return;
+    if (source_next == "XX__THE_CONSUMER_IS_NULL__XX") return;
     sink->write(map_function->map(source_next)); 
 };
 

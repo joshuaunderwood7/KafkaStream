@@ -1,112 +1,108 @@
 #include <Configuration.h>
 
+libconfig::Config Configuration::cfg;
 
-void safeAttribute(TiXmlElement * pElem, string & target, const string & key)
-{ if (pElem && pElem->Attribute(key.c_str())) target = pElem->Attribute(key.c_str()); }
-
-bool safeText(TiXmlElement * pElem, string & target)
-{ 
-    if (!pElem) return false;
-    const char * text = pElem->GetText();
-    if(text) { target = string(text); return true; }
-    return false;
-}
-
+template <typename T>
+bool safeLookupValue(const libconfig::Setting & setting, string key, T & dest)
+{
+    try { setting.lookupValue(key, dest); }
+    catch(const libconfig::SettingNotFoundException &nfex)
+    {
+        cout << "Configuration::load : Source settings not found with excetion " << nfex.what() << endl;
+        //cerr << "Configuration::load : Source settings not found with excetion " << nfex.what() << endl;
+        return false;
+    }
+    return true;
+};
 
 bool Configuration::load(string filename)
 {
-    TiXmlDocument doc(filename.c_str());  
-    if (!doc.LoadFile()) return false; // could not load file
+    Configuration::cfg.setOptions( libconfig::Config::OptionAutoConvert
+                                 | libconfig::Config::OptionColonAssignmentForNonGroups
+                                 | libconfig::Config::OptionAllowOverrides
+                                 | libconfig::Config::OptionFsync
+                                 );
 
-    TiXmlHandle    hDoc(&doc);
-    TiXmlElement * pElem;
-    TiXmlHandle    hRoot(0);
+    try
+    {
+        Configuration::cfg.readFile(filename);
+    }
+    catch(const libconfig::FileIOException &fioex)
+    {
+        cout << "Configuration::load : I/O error while reading file with excetion : " << fioex.what() << endl;
+        cerr << "Configuration::load : I/O error while reading file.with excetion : " << fioex.what() << endl;
+        return false;
+    }
+    catch(const libconfig::ParseException &pex)
+    {
+        cout << "Configuration::load : Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << endl;
+        //cerr << "Configuration::load : Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << endl;
+        return false;
+    }
 
-    pElem = hDoc.FirstChildElement().Element();
-    if (!pElem) return false; // No root element
+    const libconfig::Setting& root = Configuration::cfg.getRoot();
+    try
+    {
+        const libconfig::Setting &source = root["kafka-stream"]["Source"];
+        safeLookupValue<string>(source, "brokers"                  , src_brokers                  );
+        safeLookupValue<string>(source, "topic"                    , src_topic                    );
+        safeLookupValue<string>(source, "group-id"                 , src_group_id                 );
+        safeLookupValue<bool>  (source, "debug"                    , src_debug                    );
+        safeLookupValue<string>(source, "security-protocol"        , src_security_protocol        );
+        safeLookupValue<string>(source, "starting-offset"          , src_starting_offset          );
+        safeLookupValue<string>(source, "ssl-ca-location"          , src_ssl_ca_location          );
+        safeLookupValue<string>(source, "ssl-certificate_location" , src_ssl_certificate_location );
+        safeLookupValue<string>(source, "ssl-key-location"         , src_ssl_key_location         );
+        safeLookupValue<string>(source, "ssl-key-password"         , src_ssl_key_password         );
 
-    hRoot = TiXmlHandle(pElem);
+    }
+    catch(const libconfig::SettingNotFoundException &nfex)
+    {
+        cout << "Configuration::load : Source settings not found with excetion " << nfex.what() << endl;
+        //cerr << "Configuration::load : Source settings not found with excetion " << nfex.what() << endl;
+        return false;
+    }
 
-    // Connection is a mandatory Configuration
-    pElem = hRoot.FirstChild("Source").Element();
-    if (!pElem) return false; //Missing source Configuration
-    safeAttribute(pElem, src_brokers                 , "brokers");
-    safeAttribute(pElem, src_topic                   , "topic");
-    safeAttribute(pElem, src_group_id                , "group-id");
-    safeAttribute(pElem, src_security_protocol       , "security-protocol");
-    safeAttribute(pElem, src_ssl_ca_location         , "ssl-ca-location");
-    safeAttribute(pElem, src_ssl_certificate_location, "ssl-certificate-location");
-    safeAttribute(pElem, src_ssl_key_location        , "ssl-key-location");
-    safeAttribute(pElem, src_ssl_key_password        , "ssl-key-password");
-    safeAttribute(pElem, src_starting_offset         , "starting-offset");
+    try
+    {
+        const libconfig::Setting &sink = root["kafka-stream"]["Sink"];
+        safeLookupValue<string>(sink, "brokers"                  , snk_brokers                  );
+        safeLookupValue<string>(sink, "topic"                    , snk_topic                    );
+        safeLookupValue<string>(sink, "linger-ms"                , snk_linger_ms                );
+        safeLookupValue<bool>  (sink, "supress-output"           , snk_supress_output           );
+        safeLookupValue<bool>  (sink, "debug"                    , snk_debug                    );
+        safeLookupValue<string>(sink, "security-protocol"        , snk_security_protocol        );
+        safeLookupValue<string>(sink, "ssl-ca-location"          , snk_ssl_ca_location          );
+        safeLookupValue<string>(sink, "ssl-certificate-location" , snk_ssl_certificate_location );
+        safeLookupValue<string>(sink, "ssl-key-location"         , snk_ssl_key_location         );
+        safeLookupValue<string>(sink, "ssl-key-password"         , snk_ssl_key_password         );
 
-    pElem = hRoot.FirstChild("Sink").Element();
-    if (!pElem) return false; //Missing sink Configuration
-    safeAttribute(pElem, snk_supress_output          , "supress-output");
-    safeAttribute(pElem, snk_brokers                 , "brokers");
-    safeAttribute(pElem, snk_topic                   , "topic");
-    safeAttribute(pElem, snk_linger_ms               , "linger-ms");
-    safeAttribute(pElem, snk_security_protocol       , "security-protocol");
-    safeAttribute(pElem, snk_ssl_ca_location         , "ssl-ca-location");
-    safeAttribute(pElem, snk_ssl_certificate_location, "ssl-certificate-location");
-    safeAttribute(pElem, snk_ssl_key_location        , "ssl-key-location");
-    safeAttribute(pElem, snk_ssl_key_password        , "ssl-key-password");
-    safeAttribute(pElem, snk_debug                   , "debug");
+    }
+    catch(const libconfig::SettingNotFoundException &nfex)
+    {
+        cout << "Configuration::load : Sink settings not found with excetion " << nfex.what() << endl;
+        //cerr << "Configuration::load : Sink settings not found with excetion " << nfex.what() << endl;
+    }
 
     return true;
 };
 
 
-void Configuration::save(string filename)
+bool Configuration::save(string filename)
 {
-    TiXmlDocument doc;  
-    TiXmlComment* comment;
-    TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );  
-    doc.LinkEndChild( decl ); 
-
-    TiXmlElement * root = new TiXmlElement(config_name.c_str());  
-    doc.LinkEndChild( root );  
-
-    comment  = new TiXmlComment();
-    string s = " Settings for " + config_name + " ";
-    comment->SetValue(s.c_str());  
-    root->LinkEndChild( comment );  
-
-
-    TiXmlElement * src = new TiXmlElement( "Source" );  
-    root->LinkEndChild( src );  
-    src->SetAttribute("brokers", src_brokers.c_str());
-    src->SetAttribute("topic", src_topic.c_str());
-    src->SetAttribute("group-id", src_group_id.c_str());
-    src->SetAttribute("security-protocol", src_security_protocol.c_str());
-    src->SetAttribute("ssl-ca-location", src_ssl_ca_location.c_str());
-    src->SetAttribute("ssl-certificate-location", src_ssl_certificate_location.c_str());
-    src->SetAttribute("ssl-key-location", src_ssl_key_location.c_str());
-    src->SetAttribute("ssl-key-password", src_ssl_key_password.c_str());
-    src->SetAttribute("starting-offset", src_starting_offset.c_str());
-    src->SetAttribute("debug", src_debug.c_str());
-
-
-    TiXmlElement * snk = new TiXmlElement( "Sink" );  
-    root->LinkEndChild( snk );  
-    snk->SetAttribute("supress-output", snk_supress_output.c_str());
-    snk->SetAttribute("brokers", snk_brokers.c_str());
-    snk->SetAttribute("topic", snk_topic.c_str());
-    snk->SetAttribute("linger-ms", snk_linger_ms.c_str());
-    snk->SetAttribute("security-protocol", snk_security_protocol.c_str());
-    snk->SetAttribute("ssl-ca-location", snk_ssl_ca_location.c_str());
-    snk->SetAttribute("ssl-certificate-location", snk_ssl_certificate_location.c_str());
-    snk->SetAttribute("ssl-key-location", snk_ssl_key_location.c_str());
-    snk->SetAttribute("ssl-key-password", snk_ssl_key_password.c_str());
-    snk->SetAttribute("debug", snk_debug.c_str());
-
-
-    doc.SaveFile(filename.c_str());  
-
-    delete comment;
-    delete decl;
-    delete src;
-    delete snk;
+  try
+  {
+    Configuration::cfg.writeFile(filename);
+    cout << "Configuration::save - Updated configuration successfully written to: " << filename << endl;
+    //cerr << "Configuration::save - Updated configuration successfully written to: " << filename << endl;
+  }
+  catch(const libconfig::FileIOException &fioex)
+  {
+    cout << "Configuration::save - I/O error while writing file: " << filename << endl;
+    //cerr << "Configuration::save - I/O error while writing file: " << filename << endl;
+    return false;
+  }
+  return true;
 };
 
 int64_t Configuration::getSrcStartingOffset  () { 
@@ -115,8 +111,8 @@ int64_t Configuration::getSrcStartingOffset  () {
     if (src_starting_offset == "from-stored")    return RdKafka::Topic::OFFSET_STORED; //-1000
     try { /* If a number is input as offset */   return stoll(src_starting_offset); 
     } catch ( const invalid_argument & e ) {
-        cout << "Invalid Configuration: Connection::starting-offset" << endl;
-        cout << "-intepreting as \"from-end\"" << endl;
+        cout << "Invalid or missing configuration for Source's \"starting-offset\" "
+             << "-intepreting as \"from-end\"" << endl;
         return RdKafka::Topic::OFFSET_END; //-1
     }
 };

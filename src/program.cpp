@@ -68,6 +68,12 @@ int main(int argc, const char *argv[])
     StreamProcessor   stream_processor(configuration);
     MapFunction     * my_map = new MyMap(configuration);
 
+    if (!stream_processor.initialized)
+    {
+        cout << "main - StreamProcessor not initialized, exiting now with Input/output error." << endl;
+        return 5; // Input/output error
+    }
+
     cout << "running." << endl;
     while(my_map->running())
     {

@@ -23,7 +23,11 @@ bool KafkaSource::initialize(shared_ptr<Configuration> conf)
 
 string KafkaSource::next()
 {   // fetch next OUMRecord instance
+    if (!the_consumer)
+        return "XX__THE_CONSUMER_IS_NULL__XX";
+
     int timeout_counter = 0;
+
     while (!load_raw()) 
     {
         ++timeout_counter;
