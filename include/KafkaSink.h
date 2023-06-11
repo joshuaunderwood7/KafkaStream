@@ -32,7 +32,7 @@ public:
 
   bool initialize(shared_ptr<Configuration> configuration);
   void write(string output_string);
-  bool stop() {};
+  bool stop() { return true; };
 
   void addToBuffer(unique_ptr<string> output_string);
   void writeBuffer();

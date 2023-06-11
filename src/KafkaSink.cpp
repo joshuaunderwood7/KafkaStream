@@ -86,7 +86,7 @@ void KafkaSink::write(string output_string)
 
 void KafkaSink::addToBuffer(unique_ptr<string> output_string)
 {
-    output_buffer.push_back(move(output_string));
+    output_buffer.push_back(std::move(output_string));
 };
 
 void KafkaSink::writeBuffer()

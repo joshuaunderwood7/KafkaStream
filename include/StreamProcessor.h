@@ -14,6 +14,8 @@ using namespace std;
 class MapFunction
 {
     public:
+        virtual ~MapFunction() = default;
+
         virtual string map(string) = 0;
         virtual bool   running()   = 0;   
 };

@@ -1,8 +1,9 @@
 CC=g++
-CPPFLAGS=-std=c++11 -Iinclude -Ilib/libconfig/include/
-LDFLAGS=-Llib/libconfig/lib/
-LDLIBS=-lrdkafka -lrdkafka++ -lz -lpthread -lrt -ldl -lssl -lcrypto -lconfig++
-MAKEFLAGS := --jobs=$(shell nproc)
+CPPFLAGS=-std=c++17 -Iinclude -I/opt/homebrew/include/ -I/opt/homebrew/opt/openssl@3/include
+LDFLAGS=-L/opt/homebrew/lib/ -L/opt/homebrew/opt/openssl@3/lib
+LDLIBS=-lrdkafka -lrdkafka++ -lz -lpthread -ldl -lssl -lcrypto -lconfig++
+#MAKEFLAGS := --jobs=$(shell nproc)
+
 
 EXE = program
 
